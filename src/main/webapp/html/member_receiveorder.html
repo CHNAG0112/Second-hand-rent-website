@@ -14,9 +14,10 @@
     <script src="../js/jquery.toast.js"></script>
     <link href="../css/jquery.toast.css" rel="stylesheet">
     <link href="../css/main.css" rel="stylesheet">
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Document</title>
     <style>
-        .ren{
+        .ren {
             position: absolute;
             border-radius: 0.3cm;
             display: none;
@@ -25,8 +26,10 @@
             height: auto;
             border-style: solid;
             background-color: ghostwhite;
-            right:-160px;
+            right: 10px;
+            top: 110px;
         }
+
         .agreed,
         .refuse {
             --bs-btn-color: #000;
@@ -45,7 +48,8 @@
             --bs-btn-disabled-border-color: #0dcaf0;
 
         }
-        .toProduct{
+
+        .toProduct {
             font-size: 25px;
         }
     </style>
@@ -89,8 +93,9 @@
                     <!-- 第一顆按鈕 -->
                     <button id="loginBtn" type="button" class="btn btn-primary fs-4" data-bs-toggle="modal"
                         data-bs-target="#staticBackdrop">登入</button>
-                    <button id="logoutBtn" type="submit" style="display:none" class="btn btn-primary fs-4"
-                        data-bs-target="#staticBackdrop">登出</button>
+                    <button id="logoutBtn" type="submit" style="display:none"
+                        class="btn btn-primary fs-4 rounded rounded-2" data-bs-target="#staticBackdrop ">登出</button>
+
                     <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
                         tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                         <div class="modal-dialog">
@@ -264,6 +269,8 @@
 
                 //租借者帳戶名稱
                 let member_account = item.linkedListmembers[i].member_account;
+                //查詢訂單
+                let find_order = item.linkedListorder_list[i].order_payment;
 
                 let liTemplate = `
                  <div class="card my-2">
@@ -273,13 +280,14 @@
                             <h5><h4>下訂日期</h4>${order_date}</h5>                          
                             <h5></h5>
                             <div class="btn-group">                               
+                                <button class="btn btn-info rounded-4 findOrder" data-value="${find_order}">查詢</button>&nbsp
                                 <button class="btn btn-info rounded-4 agreed" data-value="${order_detail_id}">同意</button>                               
                             </div>
                         </div>
                     </div>`;
                 //商品ID
                 let item_id = item.linkedListitems[i].item_id;
-                //商品名稱
+                //商品名稱  
                 let item_name = item.linkedListitems[i].item_name;
                 //商品接受日期
                 let item_receive_date = item.linkedListorder_details[i].item_receive_date;
@@ -293,7 +301,7 @@
                 let item_price = item.linkedListorder_details[i].item_price;
                 //商品消費方式
                 let order_payment = item.linkedListorder_details[i].order_payment;
-                let order_detail_state= item.linkedListorder_details[i].order_detail_state;
+                let order_detail_state = item.linkedListorder_details[i].order_detail_state;
                 let innerBox = `
                  <div class="card my-2">
                     <div  class="link btn bg-info text-white toProduct" data-value="${item_id}">商品名稱&nbsp${item_name}</div>
@@ -321,7 +329,7 @@
                             <h5><div>單價</div>${item_price}元<br><br><div>商品狀態</div>${order_detail_state}</h5>
                             
                             
-                            <div><button class="btn btn-info rounded-4 openRenew">續借</button></div></h5>
+                            <div><button class="btn btn-info rounded-4 openRenew" data-value="${item.linkedListorder_details[i].deliver_way}" data-value2="${item.linkedListorder_details[i].order_detail_id}">續借</button></div></h5>
                           
                             <div class="ren"> <h5>續借歸還日期${item.linkedListorder_details[i].deliver_way}</h5>  
                                               
@@ -337,25 +345,102 @@
                 $(".order").append(innerBox);
 
             }
-            $("body").on("click",".openRenew",function(){
-            $(this).parent().next().toggle();
+            $("body").on("click", ".openRenew", function () {
+                // $(this).parent().next().toggle();
+                var cal=$(this).attr("data-value");
+                const swalWithBootstrapButtons = Swal.mixin({
+                    customClass: {
+                        confirmButton: 'btn btn-success',
+                        cancelButton: 'btn btn-danger'
+                    },
+                    buttonsStyling: false
+                })
+
+                swalWithBootstrapButtons.fire({
+                    title: '請求續借',
+                    text: `續借歸還時間 ${cal}`,                  
+                    showCancelButton: true,
+                    confirmButtonText: '同意續借',
+                    cancelButtonText: '拒絕',
+                
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.toast({
+                    heading: '通知',
+                    text: "同意續借",
+                    icon: 'info',
+                    loader: true,
+                    loaderBg: '#9EC600',
+                    showHideTransition: 'fade',
+                    position: "top-center",
+                })
+                $(this).attr("data-value");
+                $(this).attr("data-value1");
+                var p = $.ajax({
+                    type: "post",
+                    url: "/agreedRenew",
+                    data: {
+                        order_detail_id: $(this).attr("data-value2"),
+                        item_return_date: $(this).attr("data-value")
+                    }
+                })
+                    } else if (                     
+                        result.dismiss === Swal.DismissReason.cancel
+                    ) {
+                       
+                    }
+                })
             });
-            $("body").on("click",".toProduct",function(){
+            $("body").on("click", ".toProduct", function () {
                 localStorage.setItem("item_id", $(this).attr("data-value"));
-                    location.href = "./product.html";    
+                location.href = "./product.html";
             })
 
-            //同意續借
-            $("body").on("click",".agreedRenew", function () {
-                $.toast({
-                        heading: '通知',
-                        text: "同意續借",
-                        icon: 'info',
-                        loader: true,
-                        loaderBg: '#9EC600',
-                        showHideTransition: 'fade',
-                        position: "top-center",
+            $("body").on("click", ".findOrder", function () {
+                console.log($(this).attr("data-value"))
+                var temp = $.ajax({
+                    type: "post",
+                    url: "/pay/query",
+                    async: !1,
+                    data: {
+                        TradeNo: $(this).attr("data-value") //從資料庫取出的綠界訂單編號
+                    }
+                });
+                console.log(temp.responseText.split('&'));
+                if ((temp.responseText.split('&')[21].slice(12)) != "") {
+                    // 顯示付款時間
+                    console.log(temp.responseText.split('&')[21].slice(12));
+                    Swal.fire({
+                        title: '商品已付款',
+                        html:
+                            `<div>綠界訂單編號:${$(this).attr("data-value")}<br><br></div>` +
+                            '付款方式:信用卡<br><br>' +
+                            `付款時間:${temp.responseText.split('&')[21].slice(12)}`,
+                        confirmButtonColor: '#0dcaf0',
+
                     })
+                }
+                // if (temp.responseText.split('&')[23].slice(12) == "Credit_CreditCard") {
+                //     // 付款方式 = 信用卡
+                // }
+                else {
+                    Swal.fire({
+                        title: '商品未付款'
+                    })
+                }
+
+            })
+            //同意續借
+            $("body").on("click", ".agreedRenew", function () {
+                $.toast({
+                    heading: '通知',
+                    text: "同意續借",
+                    icon: 'info',
+                    loader: true,
+                    loaderBg: '#9EC600',
+                    showHideTransition: 'fade',
+                    position: "top-center",
+                })
                 $(this).attr("data-value");
                 $(this).attr("data-value1");
                 var p = $.ajax({

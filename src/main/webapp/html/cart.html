@@ -11,6 +11,7 @@
     <script src="../js/jquery.toast.js"></script>
     <link href="../css/jquery.toast.css" rel="stylesheet">
     <link href="../css/main.css" rel="stylesheet">
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- <script src="../js/logIn.js"></script> -->
 
     <!--     <script src = "../js/profiles.js"></script> -->
@@ -56,8 +57,9 @@
                     <!-- 第一顆按鈕 -->
                     <button id="loginBtn" type="button" class="btn btn-primary fs-4" data-bs-toggle="modal"
                         data-bs-target="#staticBackdrop">登入</button>
-                    <button id="logoutBtn" type="submit" style="display:none" class="btn btn-primary fs-4"
-                        data-bs-target="#staticBackdrop">登出</button>
+                    <button id="logoutBtn" type="submit" style="display:none"
+                        class="btn btn-primary fs-4 rounded rounded-2" data-bs-target="#staticBackdrop ">登出</button>
+
                     <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
                         tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                         <div class="modal-dialog">
@@ -203,18 +205,27 @@
             //送出訂單 建立order list 跟 order detail
             $(".sendcart").click(async function sendOrder() {
                 var cartAll = document.getElementsByClassName("cartt");
+                
+                var date = new Date();
+                var dateStr = date.getFullYear() + "/" + (date.getMonth() + 1).toString().padStart(2, "0") + "/" + date.getDate().toString().padStart(2, "0")
+                    + " " + date.getHours().toString().padStart(2, "0") + ":" + date.getMinutes().toString().padStart(2, "0") + ":" + date.getSeconds().toString().padStart(2, "0");
+
+                var date2 = date.getFullYear() + (date.getMonth() + 1).toString().padStart(2, "0") + date.getDate().toString().padStart(2, "0");
+                var randomID = date2 + "PR" + 0 + 0 + parseInt((Math.random()) * 1000000)
+                
                 var p = $.ajax({
                     type: "post",
                     url: "/sendorderlist/",
                     data: {
-                        order_total_price: parseInt(total_price)
+                        order_total_price: parseInt(total_price),
+                        order_payment: randomID
                     }
                 });
                 orderlist = await p;
                 console.log(orderlist);
                 if (item != '') {
                     for (let i = 0; i < iArray.length; i++) {
-console.log($(`.item_return_date${iArray[i]}`).val());
+                        console.log($(`.item_return_date${iArray[i]}`).val());
                         var p = $.ajax({
                             type: "post",
                             url: "/sendorderdetail/",
@@ -251,12 +262,7 @@ console.log($(`.item_return_date${iArray[i]}`).val());
 
 
 
-                var date = new Date();
-                var dateStr = date.getFullYear() + "/" + (date.getMonth() + 1).toString().padStart(2, "0") + "/" + date.getDate().toString().padStart(2, "0")
-                    + " " + date.getHours().toString().padStart(2, "0") + ":" + date.getMinutes().toString().padStart(2, "0") + ":" + date.getSeconds().toString().padStart(2, "0");
-
-                var date2 = date.getFullYear() + (date.getMonth() + 1).toString().padStart(2, "0") + date.getDate().toString().padStart(2, "0");
-                var randomID = date2 + "PR" + 0 + 0 + parseInt((Math.random()) * 100000000)
+               
 
                 var allItemName = "";
                 for (s = 0; s < item.items.length; s++) {
@@ -436,13 +442,23 @@ console.log($(`.item_return_date${iArray[i]}`).val());
                 var date1 = new Date($(`.item_return_date${x}`).val());
                 var date2 = new Date($(`.item_receive_date${x}`).val());
                 if (date1 < date2) {
-                    alert("歸還日不能小於租借日");
+                    Swal.fire({
+                        icon: 'error',
+                        title: '錯誤',
+                        text: '歸還日不能小於租借日!'
+                        
+                    })
                 } else if ((date1 - date2) / 60 / 1000 / 60 / 24 < 5) {
-                    alert("租借日要大於五天")
-                }else if(item.order_detail[x].length==0){
+                    Swal.fire({
+                        icon: 'error',
+                        title: '錯誤',
+                        text: '租借日要大於五天!'
+                       
+                    })
+                } else if (item.order_detail[x].length == 0) {
                     // alert((date1 - date2) / 60 / 1000 / 60 / 24);
                     dayInterval = (date1 - date2) / 60 / 1000 / 60 / 24;
-                            $(`.check_input${x}`).attr("data-value1", dayInterval);
+                    $(`.check_input${x}`).attr("data-value1", dayInterval);
                 }
                 else {
                     for (i = 0; i < item.order_detail[x].length; i++) {
@@ -450,56 +466,62 @@ console.log($(`.item_return_date${iArray[i]}`).val());
                         var end = new Date(item.order_detail[x][i].item_return_date)
                         if ((date1 < start && date2 < end) || (date1 > end && date2 > end)) {
                             // alert((date1 - date2) / 60 / 1000 / 60 / 24)
-                             dayInterval = (date1 - date2) / 60 / 1000 / 60 / 24;
+                            dayInterval = (date1 - date2) / 60 / 1000 / 60 / 24;
                             $(`.check_input${x}`).attr("data-value1", dayInterval)
-                           
-                        }else{
-                            alert("此商品以被預約");
+
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: '錯誤',
+                                text: '此商品已被預約!'
+                             
+                            })
                         }
-                    }                
-                }})
-
-
-
-
-
-
-                 //勾選驗證
-                $("body").on("click", ".form_check_input", function () {
-                    var dataValue = $(this).attr("data-value");
-                    console.log($(this).attr("data-value1"));
-                    if ($(this).prop("checked")) {
-                        console.log("已加入");
-                        console.log(dataValue);
-                        iArray.push($(this).attr("data-value"));
-                        var temp = $(this).attr("data-value");
-                        total_price += (parseInt(`${item.items[temp].item_price}`) * $(this).attr("data-value1"));
-                        console.log(iArray);
-                        console.log(total_price);
                     }
-                    else {
-                        console.log("未加入");
-                        iArray.forEach(function (item, index, arr) {
-                            if (item == dataValue) {
-                                arr.splice(index, 1);
-                            }
-                        })
-                        var temp = $(this).attr("data-value");
-
-                        total_price -= parseInt(`${item.items[temp].item_price}` * $(this).attr("data-value1"));
-                        console.log(iArray);
-                        console.log(total_price);
-                    }
+                }
+            })
 
 
-                })
+
+
+
+
+            //勾選驗證
+            $("body").on("click", ".form_check_input", function () {
+                var dataValue = $(this).attr("data-value");
+                console.log($(this).attr("data-value1"));
+                if ($(this).prop("checked")) {
+                    console.log("已加入");
+                    console.log(dataValue);
+                    iArray.push($(this).attr("data-value"));
+                    var temp = $(this).attr("data-value");
+                    total_price += (parseInt(`${item.items[temp].item_price}`) * $(this).attr("data-value1"));
+                    console.log(iArray);
+                    console.log(total_price);
+                }
+                else {
+                    console.log("未加入");
+                    iArray.forEach(function (item, index, arr) {
+                        if (item == dataValue) {
+                            arr.splice(index, 1);
+                        }
+                    })
+                    var temp = $(this).attr("data-value");
+
+                    total_price -= parseInt(`${item.items[temp].item_price}` * $(this).attr("data-value1"));
+                    console.log(iArray);
+                    console.log(total_price);
+                }
+
+
+            })
         </script>
         <script src="../js/logIn.js"></script>
         <script>
-                if (AjaxgetRegister()["responseJSON"]["member_id"] == 0) {
-                    alert("請先登入")
-                    window.location.replace("../index.html");
-                }
+            if (AjaxgetRegister()["responseJSON"]["member_id"] == 0) {
+                alert("請先登入")
+                window.location.replace("../index.html");
+            }
         </script>
 </body>
 

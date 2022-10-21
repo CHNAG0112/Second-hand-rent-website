@@ -19,6 +19,27 @@
         .test input{
             width: 130px;
         }
+        
+.confirmChange {
+  padding:2px 3px;
+  font-size: 17px;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  color: #fff;
+  background-color: #04AA6D;
+  border: none;
+  border-radius: 3px;
+  box-shadow: 0 1px #999;
+}
+
+.confirmChange:hover {background-color: #3e8e41}
+
+.confirmChange:active {
+  background-color: #3e8e41;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
+}
     </style>
 </head>
 
@@ -60,8 +81,9 @@
                                 <!-- 第一顆按鈕 -->
                                 <button id="loginBtn" type="button" class="btn btn-primary fs-4" data-bs-toggle="modal"
                                     data-bs-target="#staticBackdrop">登入</button>
-                                <button id="logoutBtn" type="submit" style="display:none" class="btn btn-primary fs-4"
-                                    data-bs-target="#staticBackdrop">登出</button>
+                                    <button id="logoutBtn" type="submit" style="display:none" class="btn btn-primary fs-4 rounded rounded-2"
+                                    data-bs-target="#staticBackdrop ">登出</button>
+            
                                 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static"
                                     data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
                                     aria-hidden="true">
@@ -202,10 +224,10 @@
                                         單位價格
                                     </div>
                                     <div class="btn-group col-2">
-                                        <button class=" offset-lg-1 btn bg-info border-3 text-white rounded-5">
+                                        <button class=" offset-lg-1 btn bg-info border-3 text-white rounded-4">
                                             修改
                                         </button>
-                                        <button class=" offset-lg-1 btn border-3 bg-danger text-white rounded-5">
+                                        <button class=" offset-lg-1 btn border-3 bg-danger text-white rounded-4">
                                             刪除
                                         </button>
                                     </div>
@@ -278,10 +300,10 @@
                                <div class="col-1 d-flex price">${item_price}</div>                                   
                                
                                <div class="btn-group col-2">
-                                   <button class=" offset-lg-1 btn bg-info border-3 text-white rounded-5 advise" data-value="${item_id}">
+                                   <button class=" offset-lg-1 btn bg-info border-3 text-white rounded-3 advise" data-value="${item_id}">
                                        修改
                                    </button>
-                                   <button type="button" class=" offset-lg-1 btn border-3 bg-danger text-white rounded-5 delete" data-value="${item_id}">
+                                   <button type="button" class=" offset-lg-1 btn border-3 bg-danger text-white rounded-3 delete" data-value="${item_id}">
                                        刪除
                                    </button>
                                </div>
